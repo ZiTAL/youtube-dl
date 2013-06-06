@@ -3,14 +3,18 @@ youtube-dl
 
 youtube download library for node.js
 
+
+dependencies
+============
+
+npm install request
+npm install mime
+
 example
 =======
-```
-npm install youtube-dl
-```
 
 ```
-var youtube = require('youtube-dl');
+var youtube = require('./youtube-dl');
 
 youtube(
 {
@@ -19,7 +23,7 @@ youtube(
 	[
 		'https://www.youtube.com/watch?v=1XYMzAIj7BQ',
 		'https://www.youtube.com/watch?v=OBR-A_YfxJ8'
-	],
+	]
 	//	proxy: 'http://10.126.1.4:8080'
 });
 ```
