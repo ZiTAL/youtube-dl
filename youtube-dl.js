@@ -1,5 +1,8 @@
-// http://coding-everyday.blogspot.com.es/2013/03/how-to-grab-youtube-playback-video-files.html
-// https://github.com/edse/keepvideos
+/*
+thanks to:
+http://coding-everyday.blogspot.com.es/2013/03/how-to-grab-youtube-playback-video-files.html
+https://github.com/edse/keepvideos
+*/
 
 // npm install request
 var request = require('request');
@@ -13,21 +16,47 @@ var fs = require('fs');
 
 var youtube = function(config)
 {
-	var params = {};
+	var _params = {};
+	var r = request.defaults();
 
 	this.init = function(config)
 	{
-		params = config;
-		if(params['proxy']!==null)
+		_params = config;
+		if(_params['proxy']!==null)
 		{
 			r = request.defaults(
 			{
-				proxy: params['proxy']
+				proxy: _params['proxy']
 			});
 		}
-		else
-			r = request.defaults();
+
+		this.getInfo(_params['links'], function(response)
+		{
+			// all videos
+			for(var i in response)
+			{
+				// all versions of all videos
+				for(var j in response[i])
+				{
+					get(i, response[i][j]);
+
+					// break to get only the first version, BEST quality
+					break;
+				}
+			}
+		});
 	};
+
+	this.get = function(index, obj)
+	{
+		var ext = obj['type'];
+		ext = obj['type'].replace(/;[^$]+$/, '');
+		ext = mime.extension(ext);
+
+		var filename = "/tmp/"+index+"."+ext;
+
+		r(obj['url']).pipe(fs.createWriteStream(filename));
+	};	
 
 	this.getInfo = function(array, callback)
 	{
@@ -68,30 +97,29 @@ var youtube = function(config)
 
 	this.getVideoInfo = function(str)
 	{
+		var results = [];
+
 		var info = {};
 		this.parseStr(str, info);
 
-		var streams = info['url_encoded_fmt_stream_map'].split(',');
-
-		var results = [];
-		for(var i=0; i<streams.length; i++)
+		if(info['status']!=null && info['status']=='fail')
 		{
-			var real_stream = {};
-			this.parseStr(streams[i], real_stream);
-			real_stream['url'] += '&signature=' + real_stream['sig'];
-			results.push(real_stream);
+
+		}
+		else if(info['url_encoded_fmt_stream_map']!=null)
+		{
+			var streams = info['url_encoded_fmt_stream_map'].split(',');
+
+			for(var i=0; i<streams.length; i++)
+			{
+				var real_stream = {};
+				this.parseStr(streams[i], real_stream);
+				real_stream['url'] += '&signature=' + real_stream['sig'];
+				results.push(real_stream);
+			}
 		}
 
 		return results;
-	};
-
-	this.getVideo = function(url, callback)
-	{
-		r(url, function(error, response, body)
-		{
-			if(typeof callback === 'function')
-				callback(body);
-		});
 	};
 
 	this.parseStr = function(str, array)
