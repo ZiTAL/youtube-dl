@@ -31,17 +31,25 @@ var youtube = function(config)
 		}
 
 		this.getInfo(_params['links'], function(response)
-		{
+		{			
 			// all videos
 			for(var i in response)
 			{
-				// all versions of all videos
-				for(var j in response[i])
+				if(response[i]['status']!==null && response[i]['status']==='fail')
 				{
-					get(i, response[i][j]);
+					if(_params['onError']!==null && typeof _params['onError']==='function')
+						new _params['onError'](i, response[i]);
+				}
+				else
+				{
+					// all versions of all videos
+					for(var j in response[i])
+					{
+						get(i, response[i][j]);
 
-					// break to get only the first version, BEST quality
-					break;
+						// break to get only the first version, BEST quality
+						break;
+					}
 				}
 			}
 		});
@@ -55,7 +63,15 @@ var youtube = function(config)
 
 		var filename = "/tmp/"+index+"."+ext;
 
-		r(obj['url']).pipe(fs.createWriteStream(filename));
+		if(_params['onStart']!==null && typeof _params['onStart']==='function')
+			_params['onStart'](index);
+
+		r(obj['url'], function()
+		{
+			if(_params['onFinish']!==null && typeof _params['onFinish']==='function')
+				_params['onFinish'](index, filename);			
+
+		}).pipe(fs.createWriteStream(filename));		
 	};	
 
 	this.getInfo = function(array, callback)
@@ -103,9 +119,8 @@ var youtube = function(config)
 		this.parseStr(str, info);
 
 		if(info['status']!=null && info['status']=='fail')
-		{
+			return info;
 
-		}
 		else if(info['url_encoded_fmt_stream_map']!=null)
 		{
 			var streams = info['url_encoded_fmt_stream_map'].split(',');
