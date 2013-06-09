@@ -18,16 +18,31 @@ example
 ```
 var youtube = require('./youtube-dl');
 
-youtube(
+new youtube(
 {
-	path: '/tmp',
-	links:
-	[
-		'https://www.youtube.com/watch?v=1XYMzAIj7BQ',
-		'https://www.youtube.com/watch?v=OBR-A_YfxJ8'
-	]
-	//	proxy: 'http://10.126.1.4:8080'
+    path: '/tmp',
+    links:
+    [
+    	'https://www.youtube.com/watch?v=fSUFdW-U7mY', // sepultura orgasmatron
+//        'https://www.youtube.com/watch?v=1XYMzAIj7BQ', // sepultura barcelona
+        'https://www.youtube.com/watch?v=OBR-A_YfxJ8' // iron maiden (error)
+    ],
+    //  proxy: 'http://10.126.1.4:8080',
+    onError: function(id, error)
+    {
+    	console.log("Error downloading id:"+id);
+    	console.log("Message: "+error['reason'].replace(/<[\s\S]+>/, '')+"\n");
+    },
+    onStart: function(id)
+    {
+    	console.log("Start downloading: "+id);
+    },
+    onFinish: function(id, filename)
+    {
+    	console.log("Finished downloading, file "+filename+" saved\n");
+    }
 });
+
 ```
 
 license
