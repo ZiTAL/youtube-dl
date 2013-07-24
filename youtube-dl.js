@@ -21,6 +21,7 @@ var youtube = function(config)
 
 	this.init = function(config)
 	{
+		var self = this;
 		_params = config;
 		if(_params['proxy']!==null)
 		{
@@ -45,7 +46,7 @@ var youtube = function(config)
 					// all versions of all videos
 					for(var j in response[i])
 					{
-						get(i, response[i][j]);
+						self.get(i, response[i][j]);
 
 						// break to get only the first version, BEST quality
 						break;
